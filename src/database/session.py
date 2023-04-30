@@ -3,7 +3,7 @@
 # Import Built-Ins
 from dataclasses import dataclass
 from enum import Enum, auto
-from typing import Union
+from typing import Union, Any
 
 
 # Import Third-Party
@@ -29,7 +29,9 @@ class DBStatus(Enum):
 @dataclass
 class DBResult:
     status = DBStatus
-    data = Union[BaseModel, DatabaseError]
+    # depends on query, most likeley db-model instance
+    # but possible are multiple rows, partial results or an Error
+    data = Union[BaseModel, DatabaseError, Any]
         
 
 class AsyncSessionHandler:
@@ -56,4 +58,25 @@ class AsyncSessionHandler:
 
 
 
+class DatabaseService:
+    """ service layer for database connections """
+    def __init__(self, db):
+        self.db = db
 
+
+    # methods to ensure database results/errors are encapsulated
+    
+    def _status_ok(self, data):
+        return DBResult(DBStatus.OK, data)
+
+
+    def _status_error(self, error):
+        return DBResult(DBStatus.ERROR, data=error)
+
+
+    def _update_ok(self, model):
+        return DBResult(DBStatus.UPDATE, data=model)
+
+
+    def _delete_okay(self, id):
+        return DBResult(DBStatus.DELETE, id):
