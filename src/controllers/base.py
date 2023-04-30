@@ -1,6 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+# Import Built-Ins
+from typing import Protocol
 
+class Controller(Protocol):
+    def make_routes(self):
+        ...
+
+
+# Import Third-Party
 from starlette.responses import Response
 
 
