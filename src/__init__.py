@@ -8,7 +8,7 @@ from starlette.applications import Starlette
 from src.controllers import Controller # protocol
 
 class Backend(Starlette):
-
+    db = False
     controllers = {}
     services = {}
     
