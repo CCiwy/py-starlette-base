@@ -1,21 +1,27 @@
+# Import Built-Ins
+from typing import List
+
+# Import Third-Party
 from starlette.applications import Starlette
 
+# Import Home-grown
+from src.controllers import Controller # protocol
 
 class Backend(Starlette):
 
     controllers = {}
     services = {}
-
-    def __init__(self):
+    
+    def __init__(self) -> None:
         super(Backend, self).__init__()
 
 
-    def init_contollers(self, controllers):
+    def init_controllers(self, controllers: List[Controller]) -> None:
         for ctrl_cls in controllers:
             self._init_controller(ctrl_cls)
 
 
-    def _init_controller(self, ctrl_cls):
+    def _init_controller(self, ctrl_cls: Controller) -> None:
         ctrl = ctrl_cls(self)
 
         path_base, routes = ctrl.make_routes()
