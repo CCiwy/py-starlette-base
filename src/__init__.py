@@ -4,10 +4,10 @@ from starlette.applications import Starlette
 class Backend(Starlette):
 
     controllers = {}
+    services = {}
 
     def __init__(self):
         super(Backend, self).__init__()
-
 
 
     def init_contollers(self, controllers):
@@ -27,11 +27,11 @@ class Backend(Starlette):
             self.add_route(path, handler, methods)
 
         self.controllers[ctrl.instance_name] = ctrl
-            
+
+
     def init_event_handlers(self):
         self.add_event_handler("startup", self.on_app_start)
         self.add_event_handler("shutdown", self.on_app_stop)
-
 
 
     def init_services(self, services):
@@ -40,7 +40,25 @@ class Backend(Starlette):
             return
 
         for service_cls in services:
-            self.services[service.instance_name] = service_cls(self.db)
+            self.services[service_cls.instance_name] = service_cls(self.db)
+
+
+    def get_controller(self, ctrl_name):
+        ctrl = self.controllers.get(ctrl_name, False)
+        if ctrl:
+            return ctrl
+
+        # todo: logger warn/raise exception?
+
+
+    def get_service(self, service_name):
+        service = self.services.get(service_name, False)
+        if service:
+            return service
+
+        # todo: logger warn/raise exception?
+
+
 
     async def on_app_start(self):
         pass
