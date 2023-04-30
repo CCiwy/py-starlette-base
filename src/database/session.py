@@ -1,4 +1,4 @@
-""" module for database managment. Using sqlalchemy Async Engine"""
+""" module for database managment using sqlalchemy Async Engine"""
 
 # Import Built-Ins
 from dataclasses import dataclass
@@ -79,4 +79,4 @@ class DatabaseService:
 
 
     def _delete_okay(self, id):
-        return DBResult(DBStatus.DELETE, id):
+        return DBResult(DBStatus.DELETE, id)
