@@ -23,3 +23,13 @@ DB_LOCATION = os.getenv('DB_LOCATION')
 DB_NAME = os.getenv('DB_NAME')
 DB_CHARSET = os.getenv('DB_CHARSET')
 
+
+
+
+# LOGGER SETTINGS
+LOG_DIR = os.path.join(basedir, './logs')
+# create log dir if not exist
+if not os.path.exists(LOG_DIR):
+    os.mkdir(LOG_DIR)
+
+
