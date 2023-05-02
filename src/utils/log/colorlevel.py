@@ -55,7 +55,7 @@ class ColorLevel(logging.Formatter):
 
         elif levelno in [logging.INFO, logging.WARNING]:
             if not self._fmt == ColorLevel.info_fmt:
-                logging.Formatter.__init__(self, record)
+                logging.Formatter.__init__(self, ColorLevel.info_fmt)
 
         
         result =  logging.Formatter.format(self, record)
