@@ -8,15 +8,28 @@ import json
 
 # Import Third-Party
 from starlette.applications import Starlette
+from starlette.middleware import Middleware
+
+from starlette.responses import Response
+
+from starlette_context import plugins
+from starlette_context.middleware import RawContextMiddleware
+
+
 
 # Import Home-grown
 from src.controllers import Controller # protocol
+
+from src.controllers.debug import DebugController
+
 from src.database.session import AsyncSessionHandler
 from src.database import create_table_if_not_exists
 
 from src.errors import RequestError, DataBaseError, DeserializeError
 
-from src.utils.log import LoggableMixin
+from src.mailer import MailService
+
+from src.utils.log import LoggableMixin, get_logger
 from src.utils.log.filehandler import create_file_logger
 
 
@@ -31,23 +44,27 @@ else:
 
 # ERROR HANDLING
 DEFAULT_ERROR_MESSAGE = 'Something went wrong.'
+
+
 def error_response(msg=DEFAULT_ERROR_MESSAGE, status=500):
     data = {'message' : msg} 
     return Response(json.dumps(data), status)
 
 
-def report_error(error, request, message):
+def report_error(app, error, request, message):
     """ not implemented yet. call mailer and send admin mail"""
-    pass
+    app.mailer.send_error_mail(error, request, message)
 
+    # todo: should log to error file
 
 def on_database_error(*args, **kwargs):
     request = args[0]
     error = args[1]
     # extract error message if we really want to
 
+    app = request.app
     
-    report_error(error, request, 'database_error')
+    report_error(app, error, request, 'database_error')
     return error_response()
 
 
@@ -55,14 +72,21 @@ def on_database_error(*args, **kwargs):
 def on_builtin_error(*args, **kwargs):
     request = args[0]
     error = args[1]
+    
+    app = request.app
 
-    report_error(error, request, 'database_error')
-    return error_response()
+    logger = get_logger('error')
+
+    logger.error(f'captured {error} in on_builtin_error')
+    report_error(app, error, request, 'built in error')
+    return error_response(msg="THIS IS WORKING")
 
 
 
 def on_error(*args, **kwargs):
     request = args[0]
+    app = request.app
+    print(app)
     error = args[1]
     status = error.status_code if hasattr(error.status_code) else 500
     return error_response(status=status)
@@ -74,14 +98,31 @@ class Backend(LoggableMixin, Starlette):
     services = {}
     
     def __init__(self) -> None:
-        self.config = config
-        self.init_database()
-        super(Backend, self).__init__()
 
+        context = Middleware(RawContextMiddleware,
+                            plugins=(
+                             plugins.RequestIdPlugin(),
+                             plugins.CorrelationIdPlugin(),
+                             plugins.UserAgentPlugin(),
+                             ))
+
+        self.config = config
+        self.settings = settings
+        self.init_database()
+        Starlette.__init__(self, middleware=[context])
+        super().__init__()
         # init super before logger can be used!
         self.init_file_logger()
- 
-         
+        self.init_mailer()         
+        # todo: make this proper
+
+        self.init_controllers([DebugController])
+        self.init_exception_handlers()
+
+        self.logger.info(f'Application startup done. App name: {self.config.APP_NAME}') 
+
+
+
 
     def init_exception_handlers(self):
         # catch request based errors
@@ -115,7 +156,7 @@ class Backend(LoggableMixin, Starlette):
             self.add_route(path, handler, methods)
 
         self.controllers[ctrl.instance_name] = ctrl
-        self.logger.debug(f'finished making routes for {self.instance_name}')
+        self.logger.debug(f'finished making routes for {ctrl.instance_name}')
 
 
     def init_database(self):
@@ -127,6 +168,11 @@ class Backend(LoggableMixin, Starlette):
     def init_file_logger(self):
         create_file_logger(config.APP_NAME, settings.LOG_DIR)
 
+
+
+    def init_mailer(self):
+        self.mailer = MailService(self, config.APP_NAME)
+        
 
 
     def init_event_handlers(self):
