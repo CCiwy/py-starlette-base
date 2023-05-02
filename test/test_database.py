@@ -55,6 +55,7 @@ class DataBaseServiceTest(unittest.IsolatedAsyncioTestCase):
         self.app.init_services(services)
         self.assertTrue(ExampleService.instance_name in self.app.services)
 
+
 class DataBaseTest(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         self.app = app
@@ -100,7 +101,22 @@ class DataBaseTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result.data.name, name)
 
 
-    
+    async def test_example_model_update_attr(self):
+        name = "ExampleName"
+        model = ExampleModel(name)
+
+        service = self.app.get_service("example")
+
+        _ = await service.save(model)
+
+
+        upd = {'name' : 'new Name'}
+        result = await service.update_by_id(1, **upd)
+
+        self.assertEqual(result.status, DBStatus.UPDATE)
+        
+
+
     async def test_example_service_delete_model(self):
         name = "ExampleName"
         model = ExampleModel(name)
@@ -109,5 +125,35 @@ class DataBaseTest(unittest.IsolatedAsyncioTestCase):
 
         result = await service.delete_by_id(1)
         self.assertEqual(result.status, DBStatus.DELETE)
+
+
+    async def test_example_service_get_all_return_status_ok(self):
+        service = self.app.get_service("example")
+        result = await service.get_all()
+
+        self.assertEqual(result.status, DBStatus.OK)
+
+
+
+    async def test_example_service_get_all_returns_list(self):
+        service = self.app.get_service("example")
+        result = await service.get_all()
+
+        self.assertIsInstance(result.data, list)
+
+
+    async def test_example_service_get_all_return_data_length_is_correct(self):
+        m1 = ExampleModel('m1')
+        m2 = ExampleModel('m2')
+        
+        service = self.app.get_service("example")
+        
+        _ = await service.save(m1)
+        _ = await service.save(m2)
+
+        result = await service.get_all()
+    
+
+        self.assertEqual(len(result.data), 2)
 
 
