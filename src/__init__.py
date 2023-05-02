@@ -1,11 +1,27 @@
+#!/usr/bin/env python
+#-*- coding: utf-8 -*-
+
 # Import Built-Ins
 from typing import List
+import os
 
 # Import Third-Party
 from starlette.applications import Starlette
 
 # Import Home-grown
 from src.controllers import Controller # protocol
+from src.database.session import AsyncSessionHandler
+from src.database import create_table_if_not_exists
+
+
+# CONFIG SETTINGS
+APP_ENV = os.getenv("APP_ENV")
+import config.default as settings
+if APP_ENV == 'development':
+    import config.development as config
+else:
+    import config.production as config
+
 
 class Backend(Starlette):
     db = False
@@ -13,7 +29,10 @@ class Backend(Starlette):
     services = {}
     
     def __init__(self) -> None:
+        self.config = config
+        self.init_database()
         super(Backend, self).__init__()
+
 
 
     def init_controllers(self, controllers: List[Controller]) -> None:
@@ -34,6 +53,11 @@ class Backend(Starlette):
 
         self.controllers[ctrl.instance_name] = ctrl
 
+
+    def init_database(self):
+        # todo: this is not failsave. improve config stuff!
+        db_uri = self.config.SQLALCHEMY_DATABASE_URI
+        self.db = AsyncSessionHandler(db_uri)
 
     def init_event_handlers(self):
         self.add_event_handler("startup", self.on_app_start)
@@ -67,7 +91,9 @@ class Backend(Starlette):
 
 
     async def on_app_start(self):
-        pass
+        if not self.db:
+            return
+        create_table_if_not_exist(self.db)
 
 
     async def on_app_stop(self):
