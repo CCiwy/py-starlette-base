@@ -1,8 +1,6 @@
 """ database basemodel declaration """
-from sqlalchemy.ext.declarative import as_declarative
+from sqlalchemy.orm import DeclarativeBase
 
-
-@as_declarative()
-class BaseModel:
+class BaseModel(DeclarativeBase):
     __mapper_args__ = {'eager_defaults' : True}
 
