@@ -4,7 +4,7 @@
 # Import Built-Ins
 from typing import List
 import os
-from src.utils.log.filehandler import create_file_logger
+import json
 
 # Import Third-Party
 from starlette.applications import Starlette
@@ -14,7 +14,11 @@ from src.controllers import Controller # protocol
 from src.database.session import AsyncSessionHandler
 from src.database import create_table_if_not_exists
 
+from src.errors import RequestError, DeserializeError
+
 from src.utils.log import LoggableMixin
+from src.utils.log.filehandler import create_file_logger
+
 
 # CONFIG SETTINGS
 APP_ENV = os.getenv("APP_ENV")
@@ -24,6 +28,44 @@ if APP_ENV == 'development':
 else:
     import config.production as config
 
+
+# ERROR HANDLING
+DEFAULT_ERROR_MESSAGE = 'Something went wrong.'
+def error_response(msg=DEFAULT_ERROR_MESSAGE, status=500):
+    data = {'message' : msg} 
+    return Response(json.dumps(data), status)
+
+
+def report_error(error, request, message):
+    """ not implemented yet. call mailer and send admin mail"""
+    pass
+
+
+def on_database_error(*args, **kwargs):
+    request = args[0]
+    error = args[1]
+    # extract error message if we really want to
+
+    
+    report_error(error, request, 'database_error')
+    return error_response()
+
+
+
+def on_builtin_error(*args, **kwargs):
+    request = args[0]
+    error = args[1]
+
+    report_error(error, request, 'database_error')
+    return error_response()
+
+
+
+def on_error(*args, **kwargs):
+    request = args[0]
+    error = args[1]
+    status = error.status_code if hasattr(error.status_code) else 500
+    return error_response(status=status)
 
 
 class Backend(LoggableMixin, Starlette):
@@ -35,9 +77,22 @@ class Backend(LoggableMixin, Starlette):
         self.config = config
         self.init_database()
         super(Backend, self).__init__()
+
+        # init super before logger can be used!
         self.init_file_logger()
  
          
+
+    def init_exception_handlers(self):
+        # catch request based errors
+        for exc in [RequestError, DeserializeError]:
+            self.add_exception_handler(exc, on_error)
+
+        # catch DB ERRORS
+
+        # catch built errors [attrib, type...]
+        for exc in [TypeError, AttributeError, KeyError]:
+            self.add_exception_handler(exc, on_builtin_error)
 
     def init_controllers(self, controllers: List[Controller]) -> None:
         for ctrl_cls in controllers:
@@ -66,8 +121,9 @@ class Backend(LoggableMixin, Starlette):
 
 
     def init_file_logger(self):
-        self.logger.debug(f'{settings.LOG_DIR} =?= {config.APP_NAME}')
         create_file_logger(config.APP_NAME, settings.LOG_DIR)
+
+
 
     def init_event_handlers(self):
         self.add_event_handler("startup", self.on_app_start)
