@@ -39,7 +39,7 @@ class ApplicationTest(unittest.IsolatedAsyncioTestCase):
         controllers = [ExampleController]
         self.app.init_controllers(controllers)
 
-        self.assertTrue(ExampleController.instance_name in app.controllers)
+        self.assertTrue(ExampleController.instance_name in self.app.controllers)
         
 
     def test_example_controller_index_returns_status_200(self):
