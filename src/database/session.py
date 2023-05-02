@@ -1,9 +1,7 @@
 """ module for database managment using sqlalchemy Async Engine"""
-
 # Import Built-Ins
-from dataclasses import dataclass
 from enum import Enum, auto
-from typing import Union, Any
+from typing import Any
 
 
 # Import Third-Party
@@ -26,13 +24,12 @@ class DBStatus(Enum):
     DELETE = auto()
 
 
-@dataclass
 class DBResult:
-    status = DBStatus
     # depends on query, most likeley db-model instance
     # but possible are multiple rows, partial results or an Error
-    data = Union[BaseModel, DatabaseError, Any]
-        
+    def __init__(self, status, data=None) -> None:
+        self.status = status
+        self.data = data
 
 class AsyncSessionHandler:
 
@@ -66,8 +63,8 @@ class DatabaseService:
 
     # methods to ensure database results/errors are encapsulated
     
-    def _status_ok(self, data):
-        return DBResult(DBStatus.OK, data)
+    def _status_ok(self, data=None):
+        return DBResult(DBStatus.OK, data=data)
 
 
     def _status_error(self, error):
