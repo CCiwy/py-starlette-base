@@ -26,6 +26,12 @@ DB_CHARSET = os.getenv('DB_CHARSET')
 
 
 
+MAIL_PORT = os.getenv('MAIL_PORT')
+MAIL_SERVER = os.getenv('MAIL_SERVER')
+MAIL_USER = os.getenv('MAIL_USER')
+MAIL_PASS = os.getenv('MAIL_PASS')
+
+
 # LOGGER SETTINGS
 LOG_DIR = os.path.join(basedir, './logs')
 # create log dir if not exist
