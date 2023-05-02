@@ -14,7 +14,7 @@ from src.controllers import Controller # protocol
 from src.database.session import AsyncSessionHandler
 from src.database import create_table_if_not_exists
 
-from src.errors import RequestError, DeserializeError
+from src.errors import RequestError, DataBaseError, DeserializeError
 
 from src.utils.log import LoggableMixin
 from src.utils.log.filehandler import create_file_logger
@@ -89,10 +89,14 @@ class Backend(LoggableMixin, Starlette):
             self.add_exception_handler(exc, on_error)
 
         # catch DB ERRORS
+        for exc in [DataBaseError]:
+            self.add_exception_handler(exc, on_database_error)
 
         # catch built errors [attrib, type...]
         for exc in [TypeError, AttributeError, KeyError]:
             self.add_exception_handler(exc, on_builtin_error)
+
+
 
     def init_controllers(self, controllers: List[Controller]) -> None:
         for ctrl_cls in controllers:
