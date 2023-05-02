@@ -4,6 +4,7 @@
 # Import Built-Ins
 from typing import List
 import os
+from src.utils.log.filehandler import create_file_logger
 
 # Import Third-Party
 from starlette.applications import Starlette
@@ -24,6 +25,7 @@ else:
     import config.production as config
 
 
+
 class Backend(LoggableMixin, Starlette):
     db = False
     controllers = {}
@@ -33,6 +35,7 @@ class Backend(LoggableMixin, Starlette):
         self.config = config
         self.init_database()
         super(Backend, self).__init__()
+        self.init_file_logger()
  
          
 
@@ -62,6 +65,9 @@ class Backend(LoggableMixin, Starlette):
         self.db = AsyncSessionHandler(db_uri)
 
 
+    def init_file_logger(self):
+        self.logger.debug(f'{settings.LOG_DIR} =?= {config.APP_NAME}')
+        create_file_logger(config.APP_NAME, settings.LOG_DIR)
 
     def init_event_handlers(self):
         self.add_event_handler("startup", self.on_app_start)
