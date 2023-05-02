@@ -19,6 +19,12 @@ class DatabaseError(RuntimeError):
     """ generic db error """
     pass
 
+class LookUpError(DatabaseError):
+    def __init__(self, source, message):
+        self.source = source
+        self.message = message
+
+
 class DBStatus(Enum):
     OK = auto()
     ERROR = auto()
@@ -79,10 +85,7 @@ class DatabaseService:
             result = await session.execute(stmt)
             model = result.scalar_one_or_none()
             if model is None:
-                # todo!
-                print('no model found. implement error pls')
-                # return self._status_error(LookUpError(id, self.instance_name))
-                return
+                return self._status_error(LookUpError(self.instance_name, id))
             return self._status_ok(model)
 
 
