@@ -10,6 +10,8 @@ from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.orm import sessionmaker
 
 
+from sqlalchemy import select, delete
+
 # Import Home-Grown
 from src.database.basemodel import BaseModel
 
@@ -60,9 +62,38 @@ class DatabaseService:
     def __init__(self, db):
         self.db = db
 
+    async def save(self, model):
+        async with self.db.session as session:
+            async with session.begin():
+                try:
+                    session.add(model)
+                    return self._status_ok()
+                except AttributeError as e:
+                    await session.rollback()
+                    return self._status_error(e)
 
+
+    async def get_by_id(self, id):
+        stmt = select(self._model).where(self._model.id==id)
+        async with self.db.session as session:
+            result = await session.execute(stmt)
+            model = result.scalar_one_or_none()
+            if model is None:
+                print('no model found. implement error pls')
+                # return self._status_error(LookUpError(id, self.instance_name))
+                return
+            return self._status_ok(model)
+ 
     # methods to ensure database results/errors are encapsulated
-    
+
+
+    async def delete_by_id(self, id):
+        """ todo: cant cascade """
+        stmt = delete(self._model).where(self._model.id==id)
+        async with self.db.session as session:
+            await session.execute(stmt)
+            return self._delete_okay(id)
+
     def _status_ok(self, data=None):
         return DBResult(DBStatus.OK, data=data)
 
