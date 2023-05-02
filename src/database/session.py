@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.orm import sessionmaker
 
 
-from sqlalchemy import select, delete
+from sqlalchemy import select, update, delete
 
 # Import Home-Grown
 from src.database.basemodel import BaseModel
@@ -79,12 +79,35 @@ class DatabaseService:
             result = await session.execute(stmt)
             model = result.scalar_one_or_none()
             if model is None:
+                # todo!
                 print('no model found. implement error pls')
                 # return self._status_error(LookUpError(id, self.instance_name))
                 return
             return self._status_ok(model)
- 
-    # methods to ensure database results/errors are encapsulated
+
+
+    async def get_all(self):
+        stmt = select(self._model)
+        async with self.db.session as session:
+            result = await session.execute(stmt)
+            rows = result.scalars().all()
+
+            if not rows:
+                rows = []
+                
+            return self._status_ok(rows)
+
+
+    async def update_by_id(self, id, **kwargs):
+        stmt = update(self._model).\
+                    where(self._model.id == id).\
+                    values(**kwargs).\
+                    execution_options(synchronize_session='fetch')
+
+        async with self.db.session as session:
+            model = await session.execute(stmt)
+            await session.commit()
+            return self._update_ok(model)
 
 
     async def delete_by_id(self, id):
@@ -94,6 +117,8 @@ class DatabaseService:
             await session.execute(stmt)
             return self._delete_okay(id)
 
+
+    # methods to ensure database results/errors are encapsulated
     def _status_ok(self, data=None):
         return DBResult(DBStatus.OK, data=data)
 
