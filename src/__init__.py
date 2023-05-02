@@ -13,6 +13,7 @@ from src.controllers import Controller # protocol
 from src.database.session import AsyncSessionHandler
 from src.database import create_table_if_not_exists
 
+from src.utils.log import LoggableMixin
 
 # CONFIG SETTINGS
 APP_ENV = os.getenv("APP_ENV")
@@ -23,7 +24,7 @@ else:
     import config.production as config
 
 
-class Backend(Starlette):
+class Backend(LoggableMixin, Starlette):
     db = False
     controllers = {}
     services = {}
@@ -32,8 +33,8 @@ class Backend(Starlette):
         self.config = config
         self.init_database()
         super(Backend, self).__init__()
-
-
+ 
+         
 
     def init_controllers(self, controllers: List[Controller]) -> None:
         for ctrl_cls in controllers:
@@ -48,16 +49,19 @@ class Backend(Starlette):
             path = path_base + path_rel.rstrip("/")
             if not isinstance(methods, list):
                 methods = [methods]
-
+            self.logger.debug(f'{path} {handler}')
             self.add_route(path, handler, methods)
 
         self.controllers[ctrl.instance_name] = ctrl
+        self.logger.debug(f'finished making routes for {self.instance_name}')
 
 
     def init_database(self):
         # todo: this is not failsave. improve config stuff!
         db_uri = self.config.SQLALCHEMY_DATABASE_URI
         self.db = AsyncSessionHandler(db_uri)
+
+
 
     def init_event_handlers(self):
         self.add_event_handler("startup", self.on_app_start)
@@ -66,7 +70,7 @@ class Backend(Starlette):
 
     def init_services(self, services):
         if not self.db:
-            # todo: logger warn/use assert?
+            self.logger.warn('no database connection established. can not init services')
             return
 
         for service_cls in services:
@@ -78,7 +82,7 @@ class Backend(Starlette):
         if ctrl:
             return ctrl
 
-        # todo: logger warn/raise exception?
+        self.logger.warn(f'controller {ctrl_name} not known!')
 
 
     def get_service(self, service_name):
@@ -86,12 +90,12 @@ class Backend(Starlette):
         if service:
             return service
 
-        # todo: logger warn/raise exception?
-
+        self.logger.warning(f'service {service_name} not known!')
 
 
     async def on_app_start(self):
         if not self.db:
+            self.logger.warning('no database connected')
             return
         create_table_if_not_exist(self.db)
 
