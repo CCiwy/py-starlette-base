@@ -19,8 +19,7 @@ from starlette_context.middleware import RawContextMiddleware
 
 # Import Home-grown
 from src.controllers import Controller # protocol
-
-from src.controllers.debug import DebugController
+from src.controllers import CONTROLLERS # list of controllers defined in module
 
 from src.database.session import AsyncSessionHandler
 from src.database import create_table_if_not_exists
@@ -40,6 +39,7 @@ if APP_ENV == 'development':
     import config.development as config
 else:
     import config.production as config
+
 
 
 # ERROR HANDLING
@@ -114,9 +114,8 @@ class Backend(LoggableMixin, Starlette):
         # init super before logger can be used!
         self.init_file_logger()
         self.init_mailer()         
-        # todo: make this proper
 
-        self.init_controllers([DebugController])
+        self.init_controllers(CONTROLLERS)
         self.init_exception_handlers()
 
         self.logger.info(f'Application startup done. App name: {self.config.APP_NAME}') 
