@@ -8,6 +8,7 @@ from starlette.testclient import TestClient
 from sqlalchemy import Column, Integer, String
 from sqlalchemy import select
 
+
 # Import Home-Grown
 from src import Backend
 
@@ -34,31 +35,10 @@ class ExampleService(DatabaseService):
     instance_name = 'example'
     _model = ExampleModel
     
-    async def save(self, model):
-        async with self.db.session as session:
-            async with session.begin():
-                try:
-                    session.add(model)
-                    return self._status_ok()
-                except AttributeError as e:
-                    await session.rollback()
-                    return self._status_error(e)
+                   
 
 
-    async def get_by_id(self, id):
-        stmt = select(self._model).where(self._model.id==id)
-        async with self.db.session as session:
-            result = await session.execute(stmt)
-            model = result.scalar_one_or_none()
-            if model is None:
-                print('no model found. implement error pls')
-                # return self._status_error(LookUpError(id, self.instance_name))
-                return
-            return self._status_ok(model)
-                    
-
-
-class DataBaseTest(unittest.IsolatedAsyncioTestCase):
+class DataBaseServiceTest(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         self.app = app
         self.client = TestClient(self.app)
@@ -75,10 +55,22 @@ class DataBaseTest(unittest.IsolatedAsyncioTestCase):
         self.app.init_services(services)
         self.assertTrue(ExampleService.instance_name in self.app.services)
 
-
-    async def test_example_service_save_model_returns_db_status_ok(self):
+class DataBaseTest(unittest.IsolatedAsyncioTestCase):
+    def setUp(self) -> None:
+        self.app = app
+        self.client = TestClient(self.app)
+       
         services = [ExampleService]
         self.app.init_services(services)
+
+    def tearDown(self) -> None:
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(db_reset(self.app.db))
+
+
+
+
+    async def test_example_service_save_model_returns_db_status_ok(self):
         model = ExampleModel("name")
         service = self.app.get_service("example")
 
@@ -88,22 +80,17 @@ class DataBaseTest(unittest.IsolatedAsyncioTestCase):
 
 
     async def test_example_service_get_model_returns_db_status_ok(self):
-        services = [ExampleService]
-        self.app.init_services(services)
         name = "ExampleName"
         model = ExampleModel(name)
+        
         service = self.app.get_service("example")
         _ = await service.save(model)
 
         result = await service.get_by_id(1)
-        self.assertEqual(result.data.name, name)
-        result = await service.save(model)
         self.assertEqual(result.status, DBStatus.OK)
 
 
     async def test_example_service_get_model_returns_saved_model(self):
-        services = [ExampleService]
-        self.app.init_services(services)
         name = "ExampleName"
         model = ExampleModel(name)
         service = self.app.get_service("example")
@@ -114,3 +101,13 @@ class DataBaseTest(unittest.IsolatedAsyncioTestCase):
 
 
     
+    async def test_example_service_delete_model(self):
+        name = "ExampleName"
+        model = ExampleModel(name)
+        service = self.app.get_service("example")
+        _ = await service.save(model)
+
+        result = await service.delete_by_id(1)
+        self.assertEqual(result.status, DBStatus.DELETE)
+
+
