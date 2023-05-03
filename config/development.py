@@ -1,5 +1,4 @@
 from config.default import DB_LOCATION
-from src.mail import ADMIN_MAIL
 
 DEBUG = True
 APP_NAME = 'TEST'
