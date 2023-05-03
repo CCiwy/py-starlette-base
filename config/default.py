@@ -7,7 +7,6 @@
 import os
 import pathlib
 
-from src.utils.log.filehandler import LOG_BACKUP_COUNT, TIME_ROTATING_WHEN
 
 base_path = pathlib.Path(os.path.dirname(os.path.abspath(__file__)))
 basedir = os.path.dirname(os.path.abspath(base_path))
