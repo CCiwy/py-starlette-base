@@ -160,9 +160,9 @@ class Backend(LoggableMixin, Starlette):
 
 
     def init_file_logger(self):
-        create_file_logger(self.config.APP_NAME, self.config.LOG_DIR)
-
-
+        _filehandler = create_file_logger(self)
+        self.logger.addHandler(_filehandler)
+        
 
     def init_mailer(self):
         self.mailer = MailService(self, self.config.APP_NAME)
