@@ -1,16 +1,10 @@
 # Import Built-Ins
-
 from datetime import datetime
-#from smtplib import SMTP_SSL as SMTP
+# from smtplib import SMTP_SSL as SMTP <- TODO: we need SSL in prod.#
+# use config to check which import? (we dont have the app context tho)
+
 from smtplib import SMTP
-
 from email.message import EmailMessage
-
-# todo: get from env
-# MAIL SETTTINGS
-# todo: this is debug setting. use env config
-ADMIN_MAIL = 'test@mail.lol'
-
 
 
 class MailService:
@@ -19,11 +13,11 @@ class MailService:
         self.app = app
         self.header_name = app_name
 
-        # todo: cleanup dis!
-        self.MAIL_USER = self.FROM = app.settings.MAIL_USER
-        self.MAIL_PASS = app.settings.MAIL_PASS
-        self.MAIL_PORT = app.settings.MAIL_PORT
-        self.MAIL_SERVER = app.settings.MAIL_SERVER 
+        self.MAIL_USER = self.FROM = self.app.config.MAIL_USER
+        self.MAIL_PASS = self.app.config.MAIL_PASS
+        self.MAIL_PORT = self.app.config.MAIL_PORT
+        self.MAIL_SERVER = self.app.config.MAIL_SERVER 
+        self.ADMIN_MAIL = self.app.config.ADMIN_MAIL
 
 
     def _subject(self, subject):
@@ -56,6 +50,7 @@ class MailService:
         content = f"""Time: {timestamp}\n\n
             Error: {error}\n
             {error_type}
+            Controller: {controller}\n
             Endpoint: {endpoint}\n
             Path: {path}\n
             Params: {path_params}
