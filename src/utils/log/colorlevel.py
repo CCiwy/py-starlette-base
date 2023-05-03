@@ -5,9 +5,9 @@
 import logging
 
 # TODO: logger.info is not working: missing param record ?
+from config.default import DEFAULT_LOG_FORMAT
 
 
-DEFAULT_FORMAT = '%(levelname)s %(message)s'
 
 class ColorLevel(logging.Formatter):
 
@@ -35,7 +35,7 @@ class ColorLevel(logging.Formatter):
     info_fmt = '%(levelname)s %(asctime)s %(message)s'
 
 
-    def __init__(self, fmt=DEFAULT_FORMAT):
+    def __init__(self, fmt=DEFAULT_LOG_FORMAT):
         logging.Formatter.__init__(self, fmt)
 
 
@@ -57,6 +57,6 @@ class ColorLevel(logging.Formatter):
             if not self._fmt == ColorLevel.info_fmt:
                 logging.Formatter.__init__(self, ColorLevel.info_fmt)
 
-        
+         
         result = logging.Formatter.format(self, record)
         return result
