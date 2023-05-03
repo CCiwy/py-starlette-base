@@ -7,6 +7,8 @@
 import os
 import pathlib
 
+from src.utils.log.filehandler import LOG_BACKUP_COUNT, TIME_ROTATING_WHEN
+
 base_path = pathlib.Path(os.path.dirname(os.path.abspath(__file__)))
 basedir = os.path.dirname(os.path.abspath(base_path))
 
@@ -31,6 +33,7 @@ MAIL_SERVER = os.getenv('MAIL_SERVER')
 MAIL_USER = os.getenv('MAIL_USER')
 MAIL_PASS = os.getenv('MAIL_PASS')
 
+ADMIN_MAIL = os.getenv('ADMIN_MAIL')
 
 # LOGGER SETTINGS
 LOG_DIR = os.path.join(basedir, './logs')
@@ -38,4 +41,6 @@ LOG_DIR = os.path.join(basedir, './logs')
 if not os.path.exists(LOG_DIR):
     os.mkdir(LOG_DIR)
 
+TIME_ROTATING_WHEN = 'midnight'
+LOG_BACKUP_COUNT = 7
 
