@@ -58,5 +58,5 @@ class ColorLevel(logging.Formatter):
                 logging.Formatter.__init__(self, ColorLevel.info_fmt)
 
         
-        result =  logging.Formatter.format(self, record)
+        result = logging.Formatter.format(self, record)
         return result
