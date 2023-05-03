@@ -1,12 +1,5 @@
-from logging import FileHandler
-from logging.handlers import TimedRotatingFileHandler
 import logging
-
-
-from src.utils.log.colorlevel import DEFAULT_FORMAT 
-
-TIME_ROTATING_WHEN = 'midnight' # todo: get from conf
-LOG_BACKUP_COUNT = 7 # todo: get from conf
+from logging.handlers import TimedRotatingFileHandler
 
 
 def create_file_logger(app):
@@ -30,7 +23,7 @@ def create_file_logger(app):
 
 
     _logger = logging.Logger(app_name)
-    file_handler.setFormatter(logging.Formatter(DEFAULT_FORMAT))
+    file_handler.setFormatter(logging.Formatter(app.config.DEFAULT_LOG_FORMAT))
     
     _logger.addHandler(file_handler)
     file_handler.setLevel(logging.INFO)
