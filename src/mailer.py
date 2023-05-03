@@ -39,7 +39,7 @@ class MailService:
     def send_error_mail(self, error, request, error_type=''):
         scope = request.scope
         timestamp = str(datetime.now())
-        # todo: use starlette context for user agent
+
         correlation_id = context.data.get('X-Correlation-ID')
         user_agent = context.data.get('User-Agent')
 

@@ -48,7 +48,6 @@ def report_error(app, error, request, message):
     """ not implemented yet. call mailer and send admin mail"""
     app.mailer.send_error_mail(error, request, message)
 
-    # todo: should log to error file
 
 def on_database_error(*args, **kwargs):
     request = args[0]
