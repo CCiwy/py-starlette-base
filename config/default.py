@@ -41,6 +41,7 @@ LOG_DIR = os.path.join(basedir, './logs')
 if not os.path.exists(LOG_DIR):
     os.mkdir(LOG_DIR)
 
+DEFAULT_LOG_FORMAT = '%(levelname)s %(asctime)s [%(module)s %(lineno)d] %(message)s'
 TIME_ROTATING_WHEN = 'midnight'
 LOG_BACKUP_COUNT = 7
 
