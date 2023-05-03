@@ -7,6 +7,9 @@ from smtplib import SMTP
 from email.message import EmailMessage
 
 
+# Import Third-Party
+from starlette_context import context
+
 class MailService:
 
     def __init__(self, app, app_name) -> None:
@@ -37,14 +40,15 @@ class MailService:
         scope = request.scope
         timestamp = str(datetime.now())
         # todo: use starlette context for user agent
+        correlation_id = context.data.get('X-Correlation-ID')
+        user_agent = context.data.get('User-Agent')
 
-
+        subject = "[ERROR]"
 
         endpoint = scope["endpoint"].__func__.__qualname__
         controller = scope["endpoint"].__self__.__class__.__name__
         path = scope["path"]
         path_params = scope["path_params"]
-        subject = "[ERROR]"
 
         # mail content
         content = f"""Time: {timestamp}\n\n
@@ -53,9 +57,11 @@ class MailService:
             Controller: {controller}\n
             Endpoint: {endpoint}\n
             Path: {path}\n
-            Params: {path_params}
+            Params: {path_params}\n
+            User-Agent: {user_agent}\n
+            X-Correlation-ID: {correlation_id}\n
             """
-        reciever = ADMIN_MAIL
+        reciever = self.app.config.ADMIN_MAIL
 
         self._send(subject, content, reciever)
 
