@@ -116,7 +116,6 @@ class Backend(LoggableMixin, Starlette):
         self.init_exception_handlers()
 
         self.logger.info(f'Application startup done. App name: {self.config.APP_NAME}') 
-        self.logger.debug(self.config)
 
 
 
