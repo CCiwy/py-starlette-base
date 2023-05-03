@@ -23,7 +23,7 @@ from src.controllers import CONTROLLERS # list of controllers defined in module
 
 from src.database.session import AsyncSessionHandler
 from src.database import create_table_if_not_exists
-
+from src.configparser import Config
 from src.errors import RequestError, DataBaseError, DeserializeError
 
 from src.mailer import MailService
@@ -32,14 +32,7 @@ from src.utils.log import LoggableMixin, get_logger
 from src.utils.log.filehandler import create_file_logger
 
 
-# CONFIG SETTINGS
 APP_ENV = os.getenv("APP_ENV")
-import config.default as settings
-if APP_ENV == 'development':
-    import config.development as config
-else:
-    import config.production as config
-
 
 
 # ERROR HANDLING
@@ -86,7 +79,6 @@ def on_builtin_error(*args, **kwargs):
 def on_error(*args, **kwargs):
     request = args[0]
     app = request.app
-    print(app)
     error = args[1]
     status = error.status_code if hasattr(error.status_code) else 500
     return error_response(status=status)
@@ -106,8 +98,13 @@ class Backend(LoggableMixin, Starlette):
                              plugins.UserAgentPlugin(),
                              ))
 
-        self.config = config
-        self.settings = settings
+        self.config = Config('config')
+        self.config.from_pyfile('default.py')
+        self.config.from_pyfile(f'{APP_ENV}.py')
+
+
+       
+
         self.init_database()
         Starlette.__init__(self, middleware=[context])
         super().__init__()
@@ -119,7 +116,7 @@ class Backend(LoggableMixin, Starlette):
         self.init_exception_handlers()
 
         self.logger.info(f'Application startup done. App name: {self.config.APP_NAME}') 
-
+        self.logger.debug(self.config)
 
 
 
@@ -159,18 +156,17 @@ class Backend(LoggableMixin, Starlette):
 
 
     def init_database(self):
-        # todo: this is not failsave. improve config stuff!
         db_uri = self.config.SQLALCHEMY_DATABASE_URI
         self.db = AsyncSessionHandler(db_uri)
 
 
     def init_file_logger(self):
-        create_file_logger(config.APP_NAME, settings.LOG_DIR)
+        create_file_logger(self.config.APP_NAME, self.config.LOG_DIR)
 
 
 
     def init_mailer(self):
-        self.mailer = MailService(self, config.APP_NAME)
+        self.mailer = MailService(self, self.config.APP_NAME)
         
 
 
