@@ -1,7 +1,4 @@
-from src.controllers.user import UserController
-<<<<<<< Updated upstream
-=======
-CONTROLLERS = [UserController]
->>>>>>> Stashed changes
+from src.controllers.base import Controller # protocol
 
-CONTROLLERS = [UserController]
+
+CONTROLLERS = []
