@@ -29,7 +29,7 @@ def serialize(data, schema: Type[Schema], many: bool =False) -> Type[Schema]:
 
 def deserialize(data: Any, schema: Type[Schema]) -> Type[Schema]:
     try:
-        return schema(unknow=EXCLUDE).loads(data.decode())
+        return schema(unknown=EXCLUDE).loads(data.decode())
 
     except ValidationError as e:
         raise e
