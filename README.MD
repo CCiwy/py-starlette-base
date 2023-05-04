@@ -50,7 +50,7 @@ export ADMIN_MAIL='admin@mail.lol' # no need for real email in development
 ```
 
 ```
-python -m smtpd -n -c DebugginServer localhost:1025
+python -m smtpd -n -c DebuggingServer localhost:1025
 ```
 
 and Trigger an error
