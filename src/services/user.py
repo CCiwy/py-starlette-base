@@ -24,9 +24,10 @@ class UserModel:
         return self.token
 
 class UserService(BaseService):
+    instance_name = 'user'
+    users = dict()
 
-        users = dict()
-        
+
     def verifiy_password(self, user: UserModel, password: str) -> bool:
         hashed = hash_password(password)
         return hashed == user.salted_pass
