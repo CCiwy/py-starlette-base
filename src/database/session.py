@@ -17,7 +17,7 @@ from src.database.basemodel import BaseModel
 from src.errors import DataBaseError
 
 
-class LookUpError(DataBaseErrorr):
+class LookUpError(DataBaseError):
     def __init__(self, source, message):
         self.source = source
         self.message = message
