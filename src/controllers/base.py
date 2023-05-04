@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # Import Built-Ins
-from typing import Protocol, Type
+from typing import Protocol, Type, Any
 from json.decoder import JSONDecodeError
 
 
