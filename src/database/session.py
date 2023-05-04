@@ -14,12 +14,10 @@ from sqlalchemy import select, update, delete
 
 # Import Home-Grown
 from src.database.basemodel import BaseModel
+from src.errors import DataBaseError
 
-class DatabaseError(RuntimeError):
-    """ generic db error """
-    pass
 
-class LookUpError(DatabaseError):
+class LookUpError(DataBaseErrorr):
     def __init__(self, source, message):
         self.source = source
         self.message = message
