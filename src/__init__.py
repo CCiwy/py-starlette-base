@@ -82,7 +82,8 @@ class Backend(LoggableMixin, Starlette):
 
     def report_error(self, error, request, message):
         """ call mailer and send admin mail"""
-        self.mailer.send_error_mail(error, request, message)
+        if not self.config.DEBUG:
+            self.mailer.send_error_mail(error, request, message)
 
 
     def on_database_error(self, *args, **kwargs):
