@@ -38,51 +38,6 @@ APP_ENV = os.getenv("APP_ENV")
 # ERROR HANDLING
 DEFAULT_ERROR_MESSAGE = 'Something went wrong.'
 
-
-def error_response(msg=DEFAULT_ERROR_MESSAGE, status=500):
-    data = {'message' : msg} 
-    return Response(json.dumps(data), status)
-
-
-def report_error(app, error, request, message):
-    """ not implemented yet. call mailer and send admin mail"""
-    app.mailer.send_error_mail(error, request, message)
-
-
-def on_database_error(*args, **kwargs):
-    request = args[0]
-    error = args[1]
-    # extract error message if we really want to
-
-    app = request.app
-    
-    report_error(app, error, request, 'database_error')
-    return error_response()
-
-
-
-def on_builtin_error(*args, **kwargs):
-    request = args[0]
-    error = args[1]
-    
-    app = request.app
-
-    logger = get_logger('error')
-
-    logger.error(f'captured {error} in on_builtin_error')
-    report_error(app, error, request, 'built in error')
-    return error_response(msg="THIS IS WORKING")
-
-
-
-def on_error(*args, **kwargs):
-    request = args[0]
-    app = request.app
-    error = args[1]
-    status = error.status_code if hasattr(error.status_code) else 500
-    return error_response(status=status)
-
-
 class Backend(LoggableMixin, Starlette):
     db = False
     controllers = {}
@@ -107,6 +62,7 @@ class Backend(LoggableMixin, Starlette):
         self.init_database()
         Starlette.__init__(self, middleware=[context])
         super().__init__()
+
         # init super before logger can be used!
         self.init_file_logger()
         self.init_mailer()         
@@ -116,20 +72,59 @@ class Backend(LoggableMixin, Starlette):
 
         self.logger.info(f'Application startup done. App name: {self.config.APP_NAME}') 
 
+    
+    # EXCEPTION HANDLING
+
+    def error_response(self, msg=DEFAULT_ERROR_MESSAGE, status=500):
+        data = {'message' : msg} 
+        return Response(json.dumps(data), status)
 
 
+    def report_error(self, error, request, message):
+        """ call mailer and send admin mail"""
+        self.mailer.send_error_mail(error, request, message)
+
+
+    def on_database_error(self, *args, **kwargs):
+        request = args[0]
+        error = args[1]
+        # extract error message if we really want to
+
+        
+        self.report_error(error, request, 'database_error')
+        return self.error_response()
+
+
+
+    def on_builtin_error(self, *args, **kwargs):
+        request = args[0]
+        error = args[1]
+        
+        self.logger.error(f'captured {error} in on_builtin_error')
+        self.report_error(error, request, 'built in error')
+        return self.error_response(msg="THIS IS WORKING")
+
+
+
+    def on_error(self, *args, **kwargs):
+        error = args[1]
+        status = error.status_code if hasattr(error.status_code) else 500
+        return self.error_response(status=status)
+
+
+        
     def init_exception_handlers(self):
         # catch request based errors
         for exc in [RequestError, DeserializeError]:
-            self.add_exception_handler(exc, on_error)
+            self.add_exception_handler(exc, self.on_error)
 
         # catch DB ERRORS
         for exc in [DataBaseError]:
-            self.add_exception_handler(exc, on_database_error)
+            self.add_exception_handler(exc, self.on_database_error)
 
         # catch built errors [attrib, type...]
         for exc in [TypeError, AttributeError, KeyError]:
-            self.add_exception_handler(exc, on_builtin_error)
+            self.add_exception_handler(exc, self.on_builtin_error)
 
 
 
