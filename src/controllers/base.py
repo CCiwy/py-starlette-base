@@ -16,12 +16,6 @@ from starlette.responses import Response
 from marshmallow.schema import Schema, EXCLUDE
 from marshmallow.exceptions import ValidationError
 
-# todo: rework dis!
-class DeserializeError(RuntimeError):
-    base = None
-    @classmethod
-    def init_from(cls, e):
-        cls.base = e
 
 def serialize(data, schema: Type[Schema], many: bool =False) -> Type[Schema]:
     return schema(many=many).dumps(data, indent=4)
@@ -36,6 +30,7 @@ def deserialize(data: Any, schema: Type[Schema]) -> Type[Schema]:
     
     except JSONDecodeError as e:
         raise e
+
 
 class BaseController:
     def __init__(self, app):
