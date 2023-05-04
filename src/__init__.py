@@ -20,7 +20,7 @@ from starlette_context.middleware import RawContextMiddleware
 # Import Home-grown
 from src.controllers import Controller # protocol
 from src.controllers import CONTROLLERS # list of controllers defined in module
-
+from src.services import SERVICES
 from src.database.session import AsyncSessionHandler
 from src.database import create_table_if_not_exists
 from src.configparser import Config
@@ -68,6 +68,8 @@ class Backend(LoggableMixin, Starlette):
         self.init_mailer()         
 
         self.init_controllers(CONTROLLERS)
+
+        self.init_services(SERVICES)
         self.init_exception_handlers()
 
         self.logger.info(f'Application startup done. App name: {self.config.APP_NAME}') 
