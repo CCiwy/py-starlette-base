@@ -95,7 +95,7 @@ class Backend(LoggableMixin, Starlette):
 
         
         self.report_error(error, request, 'database_error')
-        return self.error_response()
+        return self.error_response(msg='db error')
 
 
 
@@ -111,7 +111,7 @@ class Backend(LoggableMixin, Starlette):
 
     def on_error(self, *args, **kwargs):
         error = args[1]
-        status = error.status_code if hasattr(error.status_code) else 500
+        status = getattr(error, "status_code", 500)
         return self.error_response(status=status)
 
 
@@ -178,7 +178,7 @@ class Backend(LoggableMixin, Starlette):
 
         for service_cls in services:
             self.services[service_cls.instance_name] = service_cls(self.db)
-
+            self.logger.debug(f'init services [{service_cls.instance_name}]')
 
     def get_controller(self, ctrl_name):
         ctrl = self.controllers.get(ctrl_name, False)
