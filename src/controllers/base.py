@@ -17,6 +17,9 @@ from marshmallow.schema import Schema, EXCLUDE
 from marshmallow.exceptions import ValidationError
 
 
+from src.errors import DeserializeError
+
+
 def serialize(data, schema: Type[Schema], many: bool =False) -> Type[Schema]:
     return schema(many=many).dumps(data, indent=4)
 

@@ -3,6 +3,7 @@ class RequestError(RuntimeError):
 
 
 class DeserializeError(RuntimeError):
+    status = 400
     @classmethod
     def init_from(cls, error):
         detail = getattr(error, 'message', repr(error))
