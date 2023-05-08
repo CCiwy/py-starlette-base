@@ -55,6 +55,5 @@ class UserModel(BaseModel):
 
     def start_session(self):
         self.token = generate_auth_token(self.uuid)
-        print(f'got token {self.token}')
         # add expiration timer
         return self.token
