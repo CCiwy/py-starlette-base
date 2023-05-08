@@ -12,3 +12,9 @@ class UserCreateSchema(Schema):
 class TokenRequestSchema(Schema):
     user_name = String(required=True)
     password = String(required=True)
+
+
+
+class UserProfileSchema(Schema):
+    user_name = String()
+    
