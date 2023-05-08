@@ -5,10 +5,20 @@ from functools import wraps
 from jose import jwt
 from jose.exceptions import JWTError
 
+from src.errors import Unauthorized
+
+from src.database.session import DBStatus
+from src.error_codes import UserError
+
+
 JWT_ALGO = 'HS256'
 TOKEN_SECRET = 'secret'  # todo: get from app config, maybe make sure its not equal to app secret
 TOKEN_TYPE = 'x-api-token' # todo: check hot this works with templates
 
+
+from src.utils.log import get_logger
+
+logger = get_logger('auth')
 
 def generate_auth_token(uuid, token_type=TOKEN_TYPE):
     to_encode = {
@@ -38,9 +48,7 @@ def decode_auth_token(token):
         return False
 
 
-def resolve_auth_data(auth_data):
-    _, token = auth_data.split(":")
-
+def resolve_auth_data(token):
     user_data = decode_auth_token(token)
 
     return user_data
@@ -56,34 +64,31 @@ def authenticated(auth_type):
             request = args[1]
 
             user_getter = controller.app.get_service('user').get_by_uuid
-            # user_getter = await controller.app.get_service('user').get_by_uuid
             user = False
 
             auth_data = request.headers.get('Authorization', False)
             
             if not auth_data:
                 # no authentication in request headers 
-                return False
+                raise Unauthorized(UserError.AUTH_INCOMPLETE)
 
             user_data = resolve_auth_data(auth_data)
-            
+
             if not user_data:
-                return False
+                raise Unauthorized(UserError.AUTH_INCOMPLETE)
 
             uuid, token = user_data
 
 
             # todo: use db result after implemented
-            user = await user_getter.get_by_uuid(uuid)
 
+            user_result = await user_getter(uuid)
+            user = user_result.data if user_result.status == DBStatus.OK else False
+            
             if not (user and user.token == token):
-                return False
+                raise Unauthorized(UserError.SESSION_EXPIRED)
 
-            return user
-
-
-
-            return await func(*args, **kwargs)
+            return await func(*args, user=user,**kwargs)
         return wrapper
     return auth_decorator
 
