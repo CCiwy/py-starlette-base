@@ -22,7 +22,7 @@ from src.controllers import Controller # protocol
 from src.controllers import CONTROLLERS # list of controllers defined in module
 from src.services import SERVICES
 from src.database.session import AsyncSessionHandler
-from src.database import create_table_if_not_exists
+from src.database import create_table_if_not_exists, db_reset
 from src.configparser import Config
 from src.errors import RequestError, DataBaseError, DeserializeError
 
@@ -72,6 +72,8 @@ class Backend(LoggableMixin, Starlette):
         self.init_services(SERVICES)
         self.init_exception_handlers()
 
+
+        self.init_event_handlers()
         self.logger.info(f'Application startup done. App name: {self.config.APP_NAME}') 
 
     
@@ -102,16 +104,14 @@ class Backend(LoggableMixin, Starlette):
     def on_builtin_error(self, *args, **kwargs):
         request = args[0]
         error = args[1]
-        
-        self.logger.error(f'captured {error} in on_builtin_error')
         self.report_error(error, request, 'built in error')
-        return self.error_response(msg="THIS IS WORKING")
+        return self.error_response(msg="Sth went wrong")
 
 
 
     def on_error(self, *args, **kwargs):
         error = args[1]
-        status = getattr(error, "status_code", 500)
+        status = getattr(error, "status", 500)
         return self.error_response(status=status)
 
 
@@ -200,7 +200,10 @@ class Backend(LoggableMixin, Starlette):
         if not self.db:
             self.logger.warning('no database connected')
             return
-        create_table_if_not_exist(self.db)
+        if self.config.DEBUG:
+            await db_reset(self.db)
+
+        await create_table_if_not_exists(self.db)
 
 
     async def on_app_stop(self):
