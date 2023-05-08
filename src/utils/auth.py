@@ -16,12 +16,13 @@ def generate_auth_token(uuid, token_type=TOKEN_TYPE):
         'uuid' : uuid
     }
 
-    jwt.encode(
+    token = jwt.encode(
         to_encode,
         TOKEN_SECRET,
         algorithm=JWT_ALGO
     )
 
+    return token
 
 def decode_auth_token(token):
     try:
