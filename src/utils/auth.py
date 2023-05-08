@@ -5,7 +5,7 @@ from functools import wraps
 from jose import jwt
 from jose.exceptions import JWTError
 
-from src.errors import Unauthorized
+from src.exceptions import Unauthorized
 
 from src.database.session import DBStatus
 from src.error_codes import UserError
