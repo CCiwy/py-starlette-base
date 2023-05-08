@@ -55,7 +55,19 @@ class BaseController:
 
         return Response(content=content, status_code=status, media_type="application/json")
 
-    
+
+    def bad_request(self, msg):
+        return self.response(msg, 400)
+
+
+    def unauthorized(self, msg):
+        return self.response(msg, 403)
+
+
+    def internal_error(self, msg):
+        return self.response(msg, 500)
+
+
     async def deserialize_request(self, request, schema):
         body = await request.body()
 
