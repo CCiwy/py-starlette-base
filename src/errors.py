@@ -2,6 +2,9 @@ class RequestError(RuntimeError):
     pass
 
 
+class Unauthorized(RequestError):
+    status = 403
+
 class DeserializeError(RuntimeError):
     status = 400
     @classmethod
