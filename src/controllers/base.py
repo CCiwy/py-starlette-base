@@ -5,6 +5,8 @@ from typing import Protocol, Type, Any
 from json.decoder import JSONDecodeError
 
 
+import json
+
 class Controller(Protocol):
     def make_routes(self):
         ...
@@ -42,6 +44,28 @@ class BaseController:
 
     def response(self, data, status):
         return Response(data, status)
+
+
+    def json_response(self, data, status, schema=None, many=False):
+        content = (
+            serialize(data, schema, many=many)
+            if schema 
+            else json.dumps(data)
+            )
+
+        return Response(content=content, status_code=status, media_type="application/json")
+
+
+    def bad_request(self, msg):
+        return self.response(msg, 400)
+
+
+    def unauthorized(self, msg):
+        return self.response(msg, 403)
+
+
+    def internal_error(self, msg):
+        return self.response(msg, 500)
 
 
     async def deserialize_request(self, request, schema):
