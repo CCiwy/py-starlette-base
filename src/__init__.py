@@ -102,12 +102,8 @@ class Backend(LoggableMixin, Starlette):
     def on_builtin_error(self, *args, **kwargs):
         request = args[0]
         error = args[1]
-<<<<<<< Updated upstream
         
         self.logger.error(f'captured {error} in on_builtin_error')
-=======
-        self.logger.debug(error)
->>>>>>> Stashed changes
         self.report_error(error, request, 'built in error')
         return self.error_response(msg="THIS IS WORKING")
 
@@ -115,15 +111,9 @@ class Backend(LoggableMixin, Starlette):
 
     def on_error(self, *args, **kwargs):
         error = args[1]
-<<<<<<< Updated upstream
-        status = getattr(error, "status_code", 500)
-        return self.error_response(status=status)
-=======
-        self.logger.debug(error)
         status = getattr(error, 'status', 500)
         msg = getattr(error, 'detail', DEFAULT_ERROR_MESSAGE)
         return self.error_response(msg=msg, status=status)
->>>>>>> Stashed changes
 
 
         
