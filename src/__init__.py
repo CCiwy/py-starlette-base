@@ -24,7 +24,7 @@ from src.services import SERVICES
 from src.database.session import AsyncSessionHandler
 from src.database import create_table_if_not_exists, db_reset
 from src.configparser import Config
-from src.errors import RequestError, DataBaseError, DeserializeError
+from src.exceptions import RequestError, DataBaseError, DeserializeError
 
 from src.mailer import MailService
 
