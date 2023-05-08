@@ -36,7 +36,7 @@ class ExampleController(BaseController):
 
 ```
 call like: host:port/endpoint/route
-eg: localhost:8000/example/ or localhost:8000&/example/user
+eg: localhost:8000/example/ or localhost:8000/example/user
 
 
 ## Test email on Error in development:
