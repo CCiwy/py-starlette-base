@@ -4,7 +4,7 @@ from starlette.testclient import TestClient
 
 
 from src import Backend
-from src.controllers import BaseController
+from src.controllers.base import BaseController
 
 app = Backend()
 
