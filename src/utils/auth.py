@@ -54,7 +54,6 @@ def resolve_auth_data(token):
     return user_data
 
 
-# async def authenticated(drole):
 def authenticated(auth_type):
     def auth_decorator(func):
         @wraps(func)
@@ -73,14 +72,11 @@ def authenticated(auth_type):
                 raise Unauthorized(UserError.AUTH_INCOMPLETE)
 
             user_data = resolve_auth_data(auth_data)
-
             if not user_data:
-                raise Unauthorized(UserError.AUTH_INCOMPLETE)
+                raise Unauthorized(UserError.AUTH_INCORRECT)
 
             uuid, token = user_data
 
-
-            # todo: use db result after implemented
 
             user_result = await user_getter(uuid)
             user = user_result.data if user_result.status == DBStatus.OK else False
