@@ -14,7 +14,7 @@ from sqlalchemy import select, update, delete
 
 # Import Home-Grown
 from src.database.basemodel import BaseModel
-from src.errors import DataBaseError
+from src.exception import DataBaseError
 
 
 class LookUpError(DataBaseError):
