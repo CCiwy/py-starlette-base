@@ -5,8 +5,11 @@ class ErrorBase(RuntimeError):
         self.source = detail
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 class DeserializeError(RuntimeError):
     status = 400
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     @classmethod
