@@ -85,7 +85,11 @@ class UserController(BaseController):
 
         # call user_service
         user_service = self.app.get_service("user")
-        user_model = await user_service.get_user(user_name)
+        user_result = await user_service.get_user(user_name)
+        if not user_result.status == DBStatus.OK:
+            return self.unauthorized(UserError.AUTH_INCORRECT)
+
+        user_model = user_result.data
         # check if user exist + password matches
         if not user_model or not user_model.verifiy_password(password):
             return self.unauthorized(UserError.AUTH_INCORRECT) 
@@ -94,6 +98,7 @@ class UserController(BaseController):
         token = await user_service.start_session(user_model.uuid)
 
         return self.response(token, 200)
+
 
     @request_logger('base')
     @authenticated('base')
