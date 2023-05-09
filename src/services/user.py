@@ -37,11 +37,11 @@ class UserService(DatabaseService):
             result = await session.execute(stmt)
             user = result.scalar_one_or_none()
             if user is None:
-                return
+                return self._status_error(LookUpError(user_name, self.instance_name))
 
             token = user.start_session()
             await session.commit()
-            return token
+            return self._status_ok(token)
 
     async def user_exists(self, user_name):
         user = await self._get_user(user_name)
@@ -53,7 +53,7 @@ class UserService(DatabaseService):
         if model is None:
             return self._status_error(LookUpError(user_name, self.instance_name))
 
-        return model
+        return self._status_ok(model)
 
 
     async def _get_user(self, user_name): 
