@@ -65,6 +65,7 @@ class UserController(BaseController):
 
         result = await user_service.create_user(user_name, password)
 
+        
         if not result.status == DBStatus.OK:
             return self.internal_error('sth went wrong')
        
@@ -95,8 +96,11 @@ class UserController(BaseController):
             return self.unauthorized(UserError.AUTH_INCORRECT) 
     
         # start session, get token
-        token = await user_service.start_session(user_model.uuid)
+        token_result = await user_service.start_session(user_model.uuid)
+        if not token_result.status == DBStatus.OK:
+            return self.unauthorized(UserError.SESSION_EXPIRED)
 
+        token = token_result.data
         return self.response(token, 200)
 
 
@@ -104,7 +108,6 @@ class UserController(BaseController):
     @authenticated('base')
     async def my_user_data(self, request, user=False):
 
-        logger.debug(f'USER: {user}')
         if not user:
             return self.unauthorized('not authenticated')
 
