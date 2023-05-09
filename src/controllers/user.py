@@ -61,7 +61,7 @@ class UserController(BaseController):
         user_exists = await user_service.user_exists(user_name)
         if user_exists:
             # check what status code is the proper one to return here
-            return self.bad_request(UserError.NAME_NOT_FREE)
+            return self.bad_request(UserError.USER_ALREAD_EXISTS)
 
         result = await user_service.create_user(user_name, password)
 
