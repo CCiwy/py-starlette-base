@@ -4,14 +4,9 @@ class ErrorBase(RuntimeError):
         self.detail = detail
         self.source = detail
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 class DeserializeError(RuntimeError):
     status = 400
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
+
     @classmethod
     def init_from(cls, error):
         detail = getattr(error, 'message', repr(error))
